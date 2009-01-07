@@ -1,0 +1,19 @@
+importFrom(codetools,
+           findGlobals)
+
+importFrom(methods,
+           findClass,
+           findFunction,
+           getClassDef,
+           getClasses,
+           getGeneric,
+           is,
+           isClass,
+           listFromMlist,
+           packageSlot,
+           slot)
+
+importFrom(utils,
+           find)
+
+export(findExternalDeps, writeNamespaceImports)
