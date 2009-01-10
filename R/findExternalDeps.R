@@ -1,4 +1,10 @@
 findExternalDeps <- function(package) {
+    reparseAndFindGlobals <- function(fun, merge = TRUE) {
+        funCopy <- eval(parse(text = paste(deparse(fun), collapse = "\n")))
+        environment(funCopy) <- environment(fun)
+        findGlobals(funCopy, merge = merge)
+    }
+
     pname <- paste("package", package, sep = ":")
     if (! pname %in% search())
         stop("package must be loaded")
@@ -34,8 +40,8 @@ findExternalDeps <- function(package) {
             packageGlobals <- 
               lapply(ls(get(".__S3MethodsTable__.", packageEnv), all = TRUE),
                      function(x)
-                     findGlobals(get(x, get(".__S3MethodsTable__.", packageEnv)),
-                                 merge = FALSE))
+                     reparseAndFindGlobals(get(x, get(".__S3MethodsTable__.", packageEnv)),
+                                           merge = FALSE))
             packageGlobalsFunctions <-
               sort(unique(c(packageGlobalsFunctions,
                             unlist(lapply(packageGlobals, "[[", "functions")))))
@@ -69,7 +75,7 @@ findExternalDeps <- function(package) {
                          mList <- list(mList[[1L]][inPackage], mList[[2L]][inPackage])
                          z <-
                            lapply(mList[[2L]], function(y)
-                                  findGlobals(slot(y, ".Data"), merge = FALSE))
+                                  reparseAndFindGlobals(slot(y, ".Data"), merge = FALSE))
                          list("classes" = unname(unlist(mList[[1L]])),
                               "functions" = unlist(lapply(z, "[[", "functions")),
                               "variables" = unlist(lapply(z, "[[", "variables")))
@@ -89,7 +95,7 @@ findExternalDeps <- function(package) {
               lapply(packageObjs[["Name"]][packageObjs[["Type"]] == "Other" &
                                            packageObjs[["Function"]]],
                      function(x)
-                     tryCatch(findGlobals(get(x, packageEnv), merge = FALSE),
+                     tryCatch(reparseAndFindGlobals(get(x, packageEnv), merge = FALSE),
                               error = function(e)
                               list("functions" = character(0L),
                                    "variables" = character(0L))))
