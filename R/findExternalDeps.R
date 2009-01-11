@@ -1,10 +1,4 @@
 findExternalDeps <- function(package) {
-    reparseAndFindGlobals <- function(fun, merge = TRUE) {
-        funCopy <- eval(parse(text = paste(deparse(fun), collapse = "\n")))
-        environment(funCopy) <- environment(fun)
-        findGlobals(funCopy, merge = merge)
-    }
-
     pname <- paste("package", package, sep = ":")
     if (! pname %in% search())
         stop("package must be loaded")
@@ -40,8 +34,8 @@ findExternalDeps <- function(package) {
             packageGlobals <- 
               lapply(ls(get(".__S3MethodsTable__.", packageEnv), all = TRUE),
                      function(x)
-                     reparseAndFindGlobals(get(x, get(".__S3MethodsTable__.", packageEnv)),
-                                           merge = FALSE))
+                     findGlobalsBioC(get(x, get(".__S3MethodsTable__.", packageEnv)),
+                                     merge = FALSE))
             packageGlobalsFunctions <-
               sort(unique(c(packageGlobalsFunctions,
                             unlist(lapply(packageGlobals, "[[", "functions")))))
@@ -75,7 +69,7 @@ findExternalDeps <- function(package) {
                          mList <- list(mList[[1L]][inPackage], mList[[2L]][inPackage])
                          z <-
                            lapply(mList[[2L]], function(y)
-                                  reparseAndFindGlobals(slot(y, ".Data"), merge = FALSE))
+                                  findGlobalsBioC(slot(y, ".Data"), merge = FALSE))
                          list("classes" = unname(unlist(mList[[1L]])),
                               "functions" = unlist(lapply(z, "[[", "functions")),
                               "variables" = unlist(lapply(z, "[[", "variables")))
@@ -95,7 +89,7 @@ findExternalDeps <- function(package) {
               lapply(packageObjs[["Name"]][packageObjs[["Type"]] == "Other" &
                                            packageObjs[["Function"]]],
                      function(x)
-                     tryCatch(reparseAndFindGlobals(get(x, packageEnv), merge = FALSE),
+                     tryCatch(findGlobalsBioC(get(x, packageEnv), merge = FALSE),
                               error = function(e)
                               list("functions" = character(0L),
                                    "variables" = character(0L))))
@@ -193,7 +187,7 @@ findExternalDeps <- function(package) {
     ## Prepare the output
     S4ClassesOutput <- list()
     S4MethodsOutput <- list()
-    functionOutput <- list()
+    functionsOutput <- list()
     variablesOutput <- list()
 
     if (length(packageExternalClasses) > 0L) {

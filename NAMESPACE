@@ -1,5 +1,4 @@
-importFrom(codetools,
-           findGlobals)
+import(codetools)
 
 importFrom(methods,
            findClass,
