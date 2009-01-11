@@ -1,12 +1,15 @@
 findExternalDeps <- function(package) {
-    pname <- paste("package", package, sep = ":")
-    if (! pname %in% search())
-        stop("package must be loaded")
-    if (package %in% loadedNamespaces())
-        packageEnv <- getNamespace(package)
-    else
-        packageEnv <- as.environment(pname)
+    getPackageEnvironment <- function(package) {
+        pname <- paste("package", package, sep = ":")
+        if (! pname %in% search())
+            stop("package must be loaded")
+        if (package %in% loadedNamespaces())
+            getNamespace(package)
+        else
+            as.environment(pname)
+    }
 
+    packageEnv <- getPackageEnvironment(package)
     packageObjs <- getPackageTable(package)
     packageObjs <-
       packageObjs[packageObjs[["Origin"]] == package |
@@ -199,12 +202,11 @@ findExternalDeps <- function(package) {
 
     if (length(packageExternalGlobalsFunctions) > 0L) {
         isS4Method <-
-          unlist(lapply(paste(packageOriginGlobalsFunctions,
-                              ":::\"",
-                              packageExternalGlobalsFunctions,
-                              "\"", sep = ""),
-                        function(x)
-                        isS4(eval(parse(text = x), packageEnv))))
+          unlist(lapply(seq_len(length(packageExternalGlobalsFunctions)),
+                        function(i)
+                        isS4(getFunction(packageExternalGlobalsFunctions[i],
+                          where =
+                          getPackageEnvironment(packageOriginGlobalsFunctions[i])))))
         if (any(isS4Method)) {
             S4MethodsOutput <-
               split(packageExternalGlobalsFunctions[isS4Method],
