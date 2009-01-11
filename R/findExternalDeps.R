@@ -2,7 +2,7 @@ findExternalDeps <- function(package) {
     getPackageEnvironment <- function(package) {
         pname <- paste("package", package, sep = ":")
         if (! pname %in% search())
-            stop("package must be loaded")
+            stop(package, " must be loaded")
         if (package %in% loadedNamespaces())
             getNamespace(package)
         else
