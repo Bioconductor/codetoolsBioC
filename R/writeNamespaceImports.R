@@ -9,7 +9,7 @@ function(package, file = "", append = FALSE, quote = FALSE, ignoreAllBasePackage
             } else {
                 qstring1 <- ""
                 qstring2 <- rep("", length(x[[i]]))
-                qstring2[grep("<-", x[[i]])] <- "\""
+                qstring2[grep("(<-|\\[)", x[[i]])] <- "\""
             }
             cat(paste(prefix, "(", qstring1, names(x[i]), qstring1, ",\n",
                       spaces, paste(qstring2, x[[i]], qstring2, sep = "",
