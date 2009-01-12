@@ -1,4 +1,4 @@
-writeNamespaceImports <- function(package, file = "") {
+writeNamespaceImports <- function(package, file = "", append = FALSE) {
     writeImports <- function(x, prefix, file) {
         spaces <- paste(rep(" ", nchar(prefix) + 1), collapse = "")
         for (i in seq_len(length(x))[!(names(x) %in%
