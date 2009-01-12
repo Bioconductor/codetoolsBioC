@@ -37,7 +37,15 @@ function(package, file = "", append = FALSE, quote = FALSE, ignoreAllBasePackage
     }
     if (!inherits(file, "connection")) 
         stop("'file' must be a character string or connection")
+
     deps <- findExternalDeps(package)
+
+    depNames <- sort(unique(unlist(lapply(deps, names), use.names = FALSE)))
+    depNames <- depNames[!(depNames %in% ignoredPackages)]
+    if (length(depNames) > 0) {
+        cat(paste("#Imports: ", paste(depNames, collapse = ", "), "\n\n",
+                  sep = ""), file = file)
+    }
     writeImports(deps[["S4Classes"]], "importClassesFrom", file)
     writeImports(deps[["S4Methods"]], "importMethodsFrom", file)
     writeImports(deps[["functions"]], "importFrom", file)
