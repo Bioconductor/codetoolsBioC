@@ -148,24 +148,25 @@ findExternalDeps <- function(package) {
     packageOriginGlobalsFunctions <-
       unlist(lapply(packageGlobalsFunctions,
              function(x) {
-                 generic <-
-                   tryCatch(getGeneric(x, where = packageEnv),
-                            error = function(e) NULL)
-                 if (is(generic, "standardGeneric")) {
-                     envName <- packageSlot(generic)
-                 } else {
-                     functionList <- findFunction(x, where = packageEnv)
-                     if (length(functionList) == 0L)
-                         functionList <- findFunction(x, where = globalenv())
-                     envName <- environmentName(functionList[[1L]])
-                     if (envName == paste("imports:", package, sep = "")) {
-                         candidates <-
-                           names(packageImports)[unlist(lapply(packageImports,
-                                                        function(y) x %in% y))]
-                         envName <- candidates[1L]
-                     }
-                     envName
+                 functionList <- findFunction(x, where = packageEnv)
+                 if (length(functionList) == 0L) {
+                     functionList <- findFunction(x, where = globalenv())
                  }
+                 candidates <-
+                   sub("package:", "",
+                       unlist(lapply(functionList, environmentName)))
+                 if (paste("imports:", package, sep = "") %in% candidates) {
+                     candidates <-
+                       names(packageImports)[unlist(lapply(packageImports,
+                                                    function(y) x %in% y))]
+                 }
+                 isS4Method <-
+                   unlist(lapply(candidates, function(y)
+                                 isS4(get(x, getPackageEnvironment(y)))))
+                 if (any(isS4Method) && !all(isS4Method)) {
+                     candidates <- candidates[isS4Method]
+                 }
+                 candidates[1L]
              }))
 
     packageClasses <-
@@ -173,8 +174,6 @@ findExternalDeps <- function(package) {
     packageExternalClasses <-
       packageClasses[!(packageClasses %in% getClasses(packageEnv))]
 
-    packageOriginGlobalsFunctions <-
-      gsub("package:", "", packageOriginGlobalsFunctions)
     externalOrigin <-
       (is.na(packageOriginGlobalsFunctions) |
        packageOriginGlobalsFunctions != package)
@@ -223,7 +222,7 @@ findExternalDeps <- function(package) {
         variablesOrigin <- lapply(packageExternalGlobalsVariables, find)
         variablesOutput <-
           split(packageExternalGlobalsVariables,
-                gsub("package:", "", unlist(variablesOrigin)))
+                sub("package:", "", unlist(variablesOrigin)))
     }
 
     list(S4Classes = S4ClassesOutput, S4Methods = S4MethodsOutput,
