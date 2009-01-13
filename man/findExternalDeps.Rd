@@ -5,7 +5,7 @@
 findExternalDeps(package) 
 }
 \arguments{
-  \item{package}{character naming package to analyze.}
+  \item{package}{the quoted name of the package to analyze.}
 }
 \value{
   A list with four components:  \code{S4Classes}, \code{S4Methods},

@@ -1,5 +1,5 @@
 writeNamespaceImports <-
-function(package, file = "", append = FALSE, quote = FALSE, ignoreAllBasePackages = FALSE) {
+function(package, file = "", append = TRUE, quote = FALSE) {
     writeImports <- function(x, prefix, file) {
         spaces <- paste(rep(" ", nchar(prefix) + 1), collapse = "")
         for (i in seq_len(length(x))[!(names(x) %in% ignoredPackages)]) {
@@ -18,13 +18,7 @@ function(package, file = "", append = FALSE, quote = FALSE, ignoreAllBasePackage
             cat("\n\n", file = file)
         }
     }
-    if (ignoreAllBasePackages) {
-        ignoredPackages <-
-          c("stats", "graphics", "grDevices", "utils", "datasets", "methods",
-            "base", "Autoloads")
-    } else {
-        ignoredPackages <- c("base", "Autoloads")
-    }
+    ignoredPackages <- c("base", "Autoloads")
     if (file == "") 
         file <- stdout()
     else if (is.character(file)) {
