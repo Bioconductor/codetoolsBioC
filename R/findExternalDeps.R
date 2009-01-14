@@ -127,21 +127,25 @@ findExternalDeps <- function(package) {
 
     ## Find which global objects are external
     if (package %in% loadedNamespaces()) {
-        packageImports <- getNamespaceImports(package)
+        packageImports <- getNamespaceImports(packageEnv)
         packageImports <-
-                lapply(structure(seq_len(length(packageImports)),
-                                names = names(packageImports)),
-                        function(i) {
-                            if (identical(packageImports[[i]], TRUE)) {
-                                y <-
-                                  ls(asNamespace(names(packageImports)[i]),
-                                     all = TRUE)
-                                names(y) <- y
-                                y
-                            } else {
-                                packageImports[[i]]
-                            }
-                        })
+          lapply(structure(seq_len(length(packageImports)),
+                           names = names(packageImports)),
+                 function(i) {
+                     if (identical(packageImports[[i]], TRUE)) {
+                         importedEnv <- getNamespace(names(packageImports)[i])
+                         imports <- ls(importedEnv, all = TRUE)
+                         importedEnvImports <- getNamespaceImports(importedEnv)
+                         imports <-
+                           sort(unique(c(imports, unlist(importedEnvImports[
+                                            !(names(importedEnvImports) %in%
+                                              names(packageImports))]))))
+                         names(imports) <- imports
+                         imports
+                     } else {
+                         packageImports[[i]]
+                     }
+                 })
     } else {
         packageImports <- NULL
     }
