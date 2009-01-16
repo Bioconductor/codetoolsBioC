@@ -46,16 +46,18 @@ function(package, file = "", append = TRUE, quote = FALSE,
         importsNames <- allDepNames[hasNamespace]
         ignoredPackages <- c(ignoredPackages, dependsNames)
         if (length(dependsNames) > 0) {
-            cat(strwrap(paste("#Depends: ",
+            cat(strwrap(paste("Depends: ",
                               paste(dependsNames, collapse = ", "),
-                              sep = ""), width = width, exdent = 10),
+                              sep = ""),
+                        width = width, exdent = 9, prefix = "#"),
                 file = file, sep = "\n")
             cat("\n", file = file)
         }
         if (length(importsNames) > 0) {
-            cat(strwrap(paste("#Imports: ",
+            cat(strwrap(paste("Imports: ",
                               paste(importsNames, collapse = ", "),
-                              sep = ""), width = width, exdent = 10),
+                              sep = ""),
+                        width = width, exdent = 9, prefix = "#"),
                     file = file, sep = "\n")
             cat("\n", file = file)
         }
