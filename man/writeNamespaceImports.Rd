@@ -2,7 +2,8 @@
 \alias{writeNamespaceImports}
 \title{Write NAMESPACE file imports statements}
 \usage{
-writeNamespaceImports(package, file = "", append = TRUE, quote = FALSE)
+writeNamespaceImports(package, file = "", append = TRUE, quote = FALSE,
+                      width = 0.9 * getOption("width"))
 }
 \arguments{
   \item{package}{the quoted name of the package to analyze.}
@@ -15,6 +16,8 @@ writeNamespaceImports(package, file = "", append = TRUE, quote = FALSE)
   \item{quote}{logical. If \code{TRUE}, all import fields will be double-quoted.
     If \code{FALSE}, only non-standard names like \code{[<-.fractions} will be
     double-quoted.}
+  \item{width}{a positive integer giving the target column for wrapping lines
+    in the output.}
 }
 \description{
   Writes imports statements that can be included in a package's NAMESPACE file.

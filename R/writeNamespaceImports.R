@@ -1,7 +1,7 @@
 writeNamespaceImports <-
-function(package, file = "", append = TRUE, quote = FALSE) {
-    writeImports <- function(x, prefix, file) {
-        spaces <- paste(rep(" ", nchar(prefix) + 1), collapse = "")
+function(package, file = "", append = TRUE, quote = FALSE,
+         width = 0.9 * getOption("width")) {
+    writeImports <- function(x, prefix, file, width) {
         for (i in seq_len(length(x))[!(names(x) %in% ignoredPackages)]) {
             if (quote) {
                 qstring1 <- "\""
@@ -11,11 +11,12 @@ function(package, file = "", append = TRUE, quote = FALSE) {
                 qstring2 <- rep("", length(x[[i]]))
                 qstring2[grep("(<-|\\[)", x[[i]])] <- "\""
             }
-            cat(paste(prefix, "(", qstring1, names(x[i]), qstring1, ",\n",
-                      spaces, paste(qstring2, x[[i]], qstring2, sep = "",
-                                    collapse = paste(",\n", spaces, sep = "")),
-                      ")", sep = ""), file = file)
-            cat("\n\n", file = file)
+            cat(strwrap(paste(prefix, "(", qstring1, names(x[i]), qstring1, ", ",
+                              paste(qstring2, x[[i]], qstring2, sep = "",
+                                    collapse = ", "), ")", sep = ""),
+                        width = width, exdent = nchar(prefix) + 1),
+                file = file, sep = "\n")
+            cat("\n", file = file)
         }
     }
     ignoredPackages <- c("base", "Autoloads")
@@ -32,16 +33,35 @@ function(package, file = "", append = TRUE, quote = FALSE) {
     if (!inherits(file, "connection")) 
         stop("'file' must be a character string or connection")
 
-    deps <- findExternalDeps(package)
-
-    depNames <- sort(unique(unlist(lapply(deps, names), use.names = FALSE)))
-    depNames <- depNames[!(depNames %in% ignoredPackages)]
-    if (length(depNames) > 0) {
-        cat(paste("#Imports: ", paste(depNames, collapse = ", "), "\n\n",
-                  sep = ""), file = file)
+    allDeps <- findExternalDeps(package)
+    allDepNames <- sort(unique(unlist(lapply(allDeps, names), use.names = FALSE)))
+    allDepNames <- allDepNames[!(allDepNames %in% ignoredPackages)]
+    if (length(allDepNames) > 0) {
+        hasNamespace <-
+          unlist(lapply(allDepNames,
+                 function(x)
+                 !identical(tryCatch(getNamespace(x),
+                                     error = function(e) FALSE), FALSE)))
+        dependsNames <- allDepNames[!hasNamespace]
+        importsNames <- allDepNames[hasNamespace]
+        ignoredPackages <- c(ignoredPackages, dependsNames)
+        if (length(dependsNames) > 0) {
+            cat(strwrap(paste("#Depends: ",
+                              paste(dependsNames, collapse = ", "),
+                              sep = ""), width = width, exdent = 10),
+                file = file, sep = "\n")
+            cat("\n", file = file)
+        }
+        if (length(importsNames) > 0) {
+            cat(strwrap(paste("#Imports: ",
+                              paste(importsNames, collapse = ", "),
+                              sep = ""), width = width, exdent = 10),
+                    file = file, sep = "\n")
+            cat("\n", file = file)
+        }
+        writeImports(allDeps[["S4Classes"]], "importClassesFrom", file, width)
+        writeImports(allDeps[["S4Methods"]], "importMethodsFrom", file, width)
+        writeImports(allDeps[["functions"]], "importFrom", file, width)
+        writeImports(allDeps[["variables"]], "importFrom", file, width)
     }
-    writeImports(deps[["S4Classes"]], "importClassesFrom", file)
-    writeImports(deps[["S4Methods"]], "importMethodsFrom", file)
-    writeImports(deps[["functions"]], "importFrom", file)
-    writeImports(deps[["variables"]], "importFrom", file)
 }

@@ -1,18 +1,8 @@
 import(codetools)
 
-importFrom(methods,
-           findClass,
-           findFunction,
-           getClassDef,
-           getClasses,
-           getGeneric,
-           is,
-           isClass,
-           listFromMlist,
-           packageSlot,
-           slot)
+importFrom(methods, findClass, findFunction, getClassDef, getClasses,
+           getFunction, isClass, listFromMlist, slot)
 
-importFrom(utils,
-           find)
+importFrom(utils, find)
 
 export(findExternalDeps, writeNamespaceImports)
