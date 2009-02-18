@@ -2,13 +2,17 @@ writeNamespaceImports <-
 function(package, file = "", append = TRUE, quote = FALSE,
          width = 0.9 * getOption("width")) {
     writeImports <- function(x, prefix, file, width) {
+        Rkeywords <- 
+          c("NULL", "NA", "TRUE", "FALSE", "Inf", "NaN", "NA_integer_",
+            "NA_real_", "NA_character_", "NA_complex_", "function", "while",
+            "repeat", "for", "if", "in", "else", "next", "break", "...")
         for (i in seq_len(length(x))[!(names(x) %in% ignoredPackages)]) {
             if (quote) {
                 qstring1 <- "\""
                 qstring2 <- "\""
             } else {
                 qstring1 <- ""
-                qstring2 <- rep("", length(x[[i]]))
+                qstring2 <- ifelse(x[[i]] %in% Rkeywords, "\"", "")
                 qstring2[grep("(<-|\\[)", x[[i]])] <- "\""
             }
             cat(strwrap(paste(prefix, "(", qstring1, names(x[i]), qstring1, ", ",
