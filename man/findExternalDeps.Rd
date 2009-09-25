@@ -22,7 +22,8 @@ findExternalDeps(package)
 }
 \author{Patrick Aboyoun}
 \seealso{
-  \code{\link[codetools]{findGlobals}}, \code{\link[codetools]{checkUsagePackage}}
+  \code{\link[codetools]{findGlobals}},
+  %\code{\link[codetools]{checkUsagePackage}}, Rd file not found.
 }
 \examples{
 library(stats4)
