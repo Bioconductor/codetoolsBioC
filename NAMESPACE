@@ -3,6 +3,6 @@ import(codetools)
 importFrom(methods, findClass, findFunction, getClassDef, getClasses,
            getFunction, isClass, listFromMlist, slot)
 
-importFrom(utils, find, index.search, packageDescription)
+importFrom(utils, find, packageDescription)
 
 export(findExternalDeps, writeNamespaceImports, getRdFileNames)
