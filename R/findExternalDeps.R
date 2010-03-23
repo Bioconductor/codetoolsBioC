@@ -13,7 +13,7 @@ findExternalDeps <- function(package) {
     packageObjs <- getPackageTable(package)
     packageObjs <-
       packageObjs[packageObjs[["Origin"]] == package |
-                  packageObjs[["Type"]] == "S4Methods", , drop = FALSE]
+                  packageObjs[["Type"]] == "S4MethodsTable", , drop = FALSE]
 
     ## Cast wide net to find classes, functions, and variables
     packageClasses <- character(0L)
@@ -46,34 +46,33 @@ findExternalDeps <- function(package) {
               sort(unique(c(packageGlobalsVariables,
                             unlist(lapply(packageGlobals, "[[", "variables")))))
         }
-        if (any(packageObjs[["Type"]] == "S4Methods")) {
+        if (any(packageObjs[["Type"]] == "S4MethodsTable")) {
             externalMethods <-
               packageObjs[["Name"]][packageObjs[["Origin"]] != package &
-                                    packageObjs[["Type"]] == "S4Methods"]
+                                    packageObjs[["Type"]] == "S4MethodsTable"]
             packageGlobalsFunctions <-
               sort(unique(c(packageGlobalsFunctions,
                 unlist(lapply(strsplit(substring(externalMethods, 7L), split = ":"),
                               "[[", 1L))[unlist(lapply(externalMethods,
                               function(x) {
-                                  mList <- listFromMlist(get(x, packageEnv))
-                                  any(unlist(lapply(mList[[2L]], function(y)
-                                      environmentName(environment(slot(y, ".Data"))) ==
-                                          package)))
+                                  any(unlist(eapply(get(x, packageEnv), function(y)
+                                      environmentName(environment(y)) == package)))
                               }))])))
 
-            packageGlobals <- 
-              lapply(packageObjs[["Name"]][packageObjs[["Type"]] == "S4Methods"],
+            packageGlobals <-
+              lapply(packageObjs[["Name"]][packageObjs[["Type"]] == "S4MethodsTable"],
                      function(x) {
-                         mList <- listFromMlist(get(x, packageEnv))
+                         mEnv <- get(x, packageEnv)
+                         methods <- ls(mEnv, all = TRUE)
                          inPackage <-
-                           unlist(lapply(mList[[2L]], function(y)
-                                         environmentName(environment(slot(y, ".Data"))) ==
+                           unlist(lapply(methods, function(y)
+                                         environmentName(environment(get(y, mEnv))) ==
                                          package))
-                         mList <- list(mList[[1L]][inPackage], mList[[2L]][inPackage])
+                         methods <- methods[inPackage]
                          z <-
-                           lapply(mList[[2L]], function(y)
-                                  findGlobalsBioC(slot(y, ".Data"), merge = FALSE))
-                         list("classes" = unname(unlist(mList[[1L]])),
+                           lapply(methods, function(y)
+                                  findGlobalsBioC(get(y, mEnv), merge = FALSE))
+                         list("classes" = unlist(strsplit(methods, "#")),
                               "functions" = unlist(lapply(z, "[[", "functions")),
                               "variables" = unlist(lapply(z, "[[", "variables")))
                      })
