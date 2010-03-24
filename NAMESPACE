@@ -5,4 +5,5 @@ importFrom(methods, findClass, findFunction, getClassDef, getClasses,
 
 importFrom(utils, find, packageDescription)
 
-export(findExternalDeps, writeNamespaceImports, getRdFileNames)
+export(findExternalDeps, writeNamespaceImports, getRdFileNames,
+       writeRUnitRunner)
