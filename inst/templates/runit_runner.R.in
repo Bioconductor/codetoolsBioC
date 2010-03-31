@@ -20,6 +20,13 @@
                 stop("unable to find unit tests, no 'unitTests' dir")
         }
     }
+
+    ## Run unit tests from the directory containing the test files.
+    ## This allows tests to refer to data files with relative paths
+    cwd <- getwd()
+    on.exit(setwd(cwd))
+    setwd(dir)
+
     require("RUnit", quietly=TRUE) || stop("RUnit package not found")
     RUnit_opts <- getOption("RUnit", list())
     RUnit_opts$verbose <- 0L
