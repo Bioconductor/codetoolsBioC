@@ -33,7 +33,7 @@
     RUnit_opts$silent <- TRUE
     RUnit_opts$verbose_fail_msg <- TRUE
     options(RUnit = RUnit_opts)
-    suite <- defineTestSuite(name="@PKG@ RUnit Tests", dirs=dir,
+    suite <- defineTestSuite(name="@PKG@ RUnit Tests", dirs=getwd(),
                              testFileRegexp=pattern,
                              rngKind="default",
                              rngNormalKind="default")
