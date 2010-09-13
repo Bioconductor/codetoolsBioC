@@ -10,7 +10,7 @@ getRdFileNames(topic, package=NULL)
 }
 
 \arguments{
-  \item{topic}{A length-one character vector specifing the topic (alias).}
+  \item{topic}{A length-one character vector specifying the topic (alias).}
   \item{package}{A character vector given the packages to search for
     Rd file names that document the \code{topic} , or 'NULL'. By
     default, all the packages in the search path are used.}        
