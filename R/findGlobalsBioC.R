@@ -59,10 +59,11 @@ findGlobalsBioC <- function(fun, merge = TRUE) {
     vars <- codetools:::mkHash()
     funs <- codetools:::mkHash()
 
-    collectUsageBioC(fun, followClosures = TRUE, enterGlobal = enter, leaf = leaf)
+    collectUsageBioC(fun, followClosures = TRUE, enterGlobal = enter,
+                     leaf = leaf)
     fnames <- ls(funs, all.names = TRUE)
     vnames <- ls(vars, all.names = TRUE)
     if (merge)
-        sort(unique(c(vnames, fnames)))
+        suniquec(vnames, fnames)
     else list(functions = fnames, variables = vnames)
 }
