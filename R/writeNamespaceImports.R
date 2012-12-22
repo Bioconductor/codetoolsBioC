@@ -14,7 +14,7 @@ writeNamespaceImports <-
             } else {
                 qstring1 <- ""
                 qstring2 <- ifelse(x[[i]] %in% Rkeywords, "\"", "")
-                qstring2[grep("(<-|\\[)", x[[i]])] <- "\""
+                qstring2[grep("(<-|\\[|%)", x[[i]])] <- "\""
             }
             txt <- paste0(prefix, "(", qstring1, names(x[i]), qstring1, ", ",
                           paste0(qstring2, x[[i]], qstring2, collapse = ", "),

@@ -5,7 +5,7 @@ loadRequiredPackages <-
     requiredPackages <- local({
         x <- packageDescription(package)[c("Imports", "Depends")]
         regex <- "([[:space:]]*|\\([^\\)]+\\))"
-        x <- unique(unlist(strsplit(gsub(regex, "", x), ",")))
+        x <- unique(c(package, unlist(strsplit(gsub(regex, "", x), ","))))
         x[x != "R"]
     })
     idx <- !requiredPackages %in% sub("package:", "",search())
