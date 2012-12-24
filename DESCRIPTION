@@ -1,9 +1,9 @@
 Package: codetoolsBioC
 Title: Bioconductor extensions for R code analysis tools
 Description: Bioconductor extensions for R code analysis tools.
-Version: 0.0.19
+Version: 0.0.20
 Author: Patrick Aboyoun
-Maintainer: Patrick Aboyoun <paboyoun@fhcrc.org>
+Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 Depends: R (>= 2.1)
 Imports: codetools, methods, utils
 Suggests: stats4

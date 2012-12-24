@@ -3,7 +3,8 @@ loadRequiredPackages <-
     ## all Depends: and Imports packages need to be on the search path
 {
     requiredPackages <- local({
-        x <- packageDescription(package)[c("Imports", "Depends")]
+        desc <- packageDescription(package)
+        x <- desc[names(desc) %in% c("Imports", "Depends")]
         regex <- "([[:space:]]*|\\([^\\)]+\\))"
         x <- unique(c(package, unlist(strsplit(gsub(regex, "", x), ","))))
         x[x != "R"]
