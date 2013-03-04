@@ -17,7 +17,7 @@ getRdFileNames <- function(topic, package=NULL)
    if (is.null(package))
        package <- .packages(all.available = TRUE, lib.loc = lib.loc)
 
-   paths <- sapply(.find.package(package, lib.loc), function(p) {
+   paths <- sapply(find.package(package, lib.loc), function(p) {
        utils:::index.search(topic, p)
    })
    paths <- unlist(paths)
