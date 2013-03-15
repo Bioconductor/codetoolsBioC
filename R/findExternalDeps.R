@@ -159,6 +159,9 @@ findExternalDeps <- function(package) {
                 idx <- ulapply(packageImports, function(y) x %in% y)
                 candidates <- names(packageImports)[idx]
             }
+            candidates <- candidates[ulapply(candidates, function(y) {
+                exists(x, getPackageEnvironment(y), inherits=FALSE)
+            })]
             isS4Method <- ulapply(candidates, function(y) {
                 isS4(get(x, getPackageEnvironment(y)))
             })
