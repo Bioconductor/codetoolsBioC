@@ -160,7 +160,8 @@ findExternalDeps <- function(package) {
                 candidates <- names(packageImports)[idx]
             }
             candidatesDefined <- ulapply(candidates, function(y) {
-              exists(x, getPackageEnvironment(y), inherits=FALSE)
+              exists(x, getPackageEnvironment(y), inherits=FALSE) |
+                  isS4(get(x, getPackageEnvironment(y)))
             })
             if (!any(candidatesDefined)) {
               stop("method(s) for '", x, "' imported from package(s) ",
@@ -182,8 +183,8 @@ findExternalDeps <- function(package) {
     packageExternalClasses <-
         packageClasses[!(packageClasses %in% getClasses(packageEnv))]
 
-    externalOrigin <- (is.na(packageOriginGlobalsFunctions) |
-                       packageOriginGlobalsFunctions != package)
+    externalOrigin <- is.na(packageOriginGlobalsFunctions) |
+        (packageOriginGlobalsFunctions != package)
     packageExternalGlobalsFunctions <-
         packageGlobalsFunctions[externalOrigin]
     packageOriginGlobalsFunctions <-
