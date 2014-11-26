@@ -1,9 +1,9 @@
 import(codetools)
 
-importFrom(methods, findClass, findFunction, getClassDef, getClasses,
+importFrom("methods", findClass, findFunction, getClassDef, getClasses,
            getFunction, isClass, listFromMlist, slot)
 
-importFrom(utils, find, packageDescription)
+importFrom("utils", find, packageDescription)
 
 export(findExternalDeps, writeNamespaceImports, getRdFileNames,
        writeRUnitRunner)

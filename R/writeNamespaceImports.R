@@ -3,11 +3,11 @@ writeNamespaceImports <-
              width = 0.9 * getOption("width"))
 {
     writeImports <- function(x, prefix, file, width) {
-        Rkeywords <- 
+        Rkeywords <-
           c("NULL", "NA", "TRUE", "FALSE", "Inf", "NaN", "NA_integer_",
             "NA_real_", "NA_character_", "NA_complex_", "function", "while",
             "repeat", "for", "if", "in", "else", "next", "break", "...")
-        for (i in seq_len(length(x))[!(names(x) %in% ignoredPackages)]) {
+        for (i in which(!(names(x) %in% ignoredPackages))) {
             if (quote) {
                 qstring1 <- "\""
                 qstring2 <- "\""
@@ -25,7 +25,7 @@ writeNamespaceImports <-
         }
     }
     ignoredPackages <- c("base", "Autoloads")
-    if (file == "") 
+    if (file == "")
         file <- stdout()
     else if (is.character(file)) {
         file <- file(file, ifelse(append, "a", "w"))
@@ -35,20 +35,15 @@ writeNamespaceImports <-
         open(file, "w")
         on.exit(close(file))
     }
-    if (!inherits(file, "connection")) 
+    if (!inherits(file, "connection"))
         stop("'file' must be a character string or connection")
 
     allDeps <- findExternalDeps(package)
     allDepNames <- sort(unique(ulapply(allDeps, names)))
     allDepNames <- allDepNames[!(allDepNames %in% ignoredPackages)]
     if (length(allDepNames) > 0) {
-        hasNamespace <- ulapply(allDepNames, function(x) {
-            !identical(tryCatch({
-                getNamespace(x)
-            }, error = function(e) {
-                FALSE
-            }), FALSE)
-        })
+        hasNamespace <- vapply(allDepNames, function(x)
+            !identical(FALSE, tryCatch(getNamespace(x), error = function(e) FALSE)), NA)
         dependsNames <- allDepNames[!hasNamespace]
         importsNames <- allDepNames[hasNamespace]
         ignoredPackages <- c(ignoredPackages, dependsNames)

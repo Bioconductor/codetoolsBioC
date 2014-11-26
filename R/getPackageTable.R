@@ -7,14 +7,14 @@ getPackageTable <- function(package) {
     else
         packageEnv <- as.environment(pname)
 
-    objFullName <- ls(packageEnv, all = TRUE)
+    objFullName <- ls(packageEnv, all.names = TRUE)
     splitName <- strsplit(objFullName, split = ":")
-    objName <- ulapply(splitName, "[", 1L)
+    objName <- vapply(splitName, "[", "", 1L)
 
     objType <-
         unname(c(".__C__" = "S4Class", ".__M__" = "S4Methods",
                  ".__T__" = "S4MethodsTable")[substring(objName, 1L, 6L)])
-    objType <- ifelse(is.na(objType), "Other", objType)
+    objType[is.na(objType)] <- "Other"
     objType[objName == ".__NAMESPACE__."] <- "NAMESPACE"
     objType[objName == ".__S3MethodsTable__."] <- "S3MethodsTable"
 
@@ -29,9 +29,9 @@ getPackageTable <- function(package) {
     objOrigin[is.na(objOrigin)] <- package
 
     objIsFunction <-
-        ulapply(objFullName, function(x) is.function(get(x, packageEnv)))
+        vapply(objFullName, function(x) is.function(get(x, packageEnv)), NA)
     objIsS4 <-
-        ulapply(objFullName, function(x) isS4(get(x, packageEnv)))
+        vapply(objFullName, function(x) isS4(get(x, packageEnv)), NA)
 
     data.frame("Name" = objFullName, "Origin" = objOrigin,
                "Type" = factor(objType), "Function" = objIsFunction,

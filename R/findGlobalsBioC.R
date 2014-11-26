@@ -32,11 +32,9 @@ collectUsageBioC <- function(fun, name = "<anonymous>", ...) {
 }
 
 findGlobalsBioC <- function(fun, merge = TRUE) {
-    enter  <- function(type, v, e, w)
-        if (type == "function")
-            assign(v, TRUE, funs)
-        else assign(v, TRUE, vars)
-    leaf  <- function(v, w) {
+    enter <- function(type, v, e, w)
+        assign(v, TRUE, if (type == "function") funs else vars)
+    leaf <- function(v, w) {
         if (typeof(v) == "symbol") {
             vn <- as.character(v)
             if (v == "...")
