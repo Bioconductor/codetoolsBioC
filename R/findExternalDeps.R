@@ -1,5 +1,4 @@
-loadRequiredPackages <-
-    function(package)
+loadRequiredPackages <- function(package)
     ## all Depends: and Imports packages need to be on the search path
 {
     requiredPackages <- local({
@@ -16,148 +15,138 @@ loadRequiredPackages <-
                 "'")
         for (pkg in requiredPackages[idx])
             require(pkg, character.only=TRUE)
-    }        
+    }
 }
 
 findExternalDeps <- function(package) {
     loadRequiredPackages(package)
-    packageEnv <- getPackageEnvironment(package)
-    packageObjs <- getPackageTable(package)
-    packageObjs <-
-        packageObjs[packageObjs[["Origin"]] == package |
-                    packageObjs[["Type"]] == "S4MethodsTable", , drop = FALSE]
+    pkgEnv <- getPackageEnvironment(package)
+    pkgObjs <- getPackageTable(package)
+    pkgObjs <-
+        pkgObjs[pkgObjs[["Origin"]] == package |
+                pkgObjs[["Type"]] == "S4MethodsTable", , drop = FALSE]
 
     ## Cast wide net to find classes, functions, and variables
-    packageClasses <- character(0L)
-    packageGlobalsFunctions <- character(0L)
-    packageGlobalsVariables <- character(0L)
-    if (nrow(packageObjs) > 0L) {
-        if (any(packageObjs[["Type"]] == "S4Class")) {
-            idx <- packageObjs[["Type"]] == "S4Class"
-            S4Classes <- packageObjs[["Name"]][idx]
+    pkgClasses <- character(0L)
+    pkgGlobFunctions <- character(0L)
+    pkgGlobVariables <- character(0L)
+    if (nrow(pkgObjs) > 0L) {
+        if (any(pkgObjs[["Type"]] == "S4Class")) {
+            idx <- pkgObjs[["Type"]] == "S4Class"
+            S4Classes <- pkgObjs[["Name"]][idx]
             nearbyClasses <- ulapply(S4Classes, function(x) {
-                classDef <- get(x, packageEnv)
+                classDef <- get(x, pkgEnv)
                 containedClasses <- slot(classDef, "contains")
                 distance <- ulapply(containedClasses, slot, "distance")
-                c(ulapply(slot(classDef, "slots"), unname),
+                c(vapply(slot(classDef, "slots"), unname, ""),
                   names(containedClasses[distance == 1L]))
             })
-            packageClasses <- suniquec(packageClasses, nearbyClasses)
+            pkgClasses <- suniquec(pkgClasses, nearbyClasses)
         }
-        S3MethodsTable <- get(".__S3MethodsTable__.", packageEnv)
-        S3Methods <- ls(S3MethodsTable, all=TRUE)
-        if (length(S3Methods) > 0L) {
-            packageGlobals <- lapply(S3Methods, function(x) {
-                findGlobalsBioC(get(x, S3MethodsTable), merge = FALSE)
-            })
-            packageGlobalsFunctions <-
-                suniquec(packageGlobalsFunctions, packageGlobals, "functions")
-            packageGlobalsVariables <-
-                suniquec(packageGlobalsVariables, packageGlobals, "variables")
+        S3MethodsTable <- get(".__S3MethodsTable__.", pkgEnv)
+        if (length(S3Methods <- ls(S3MethodsTable, all.names=TRUE)) > 0L) {
+            pkgGlobals <- lapply(S3Methods, function(x)
+                findGlobalsBioC(get(x, S3MethodsTable), merge = FALSE))
+            pkgGlobFunctions <-
+                suniquec(pkgGlobFunctions, pkgGlobals, "functions")
+            pkgGlobVariables <-
+                suniquec(pkgGlobVariables, pkgGlobals, "variables")
         }
-        if (any(packageObjs[["Type"]] == "S4MethodsTable")) {
-            idx <- (packageObjs[["Origin"]] != package &
-                    packageObjs[["Type"]] == "S4MethodsTable")
-            externalMethods <- packageObjs[["Name"]][idx]
-            idx <- ulapply(externalMethods, function(x) {
-                any(unlist(eapply(get(x, packageEnv), function(y) {
-                    environmentName(environment(y)) == package
-                })))
-            })
+        if (any(idx <- pkgObjs[["Type"]] == "S4MethodsTable")) {
+            idx <- idx & pkgObjs[["Origin"]] != package
+            externalMethods <- pkgObjs[["Name"]][idx]
+            idx <- vapply(externalMethods, function(x) {
+                any(unlist(eapply(get(x, pkgEnv), function(y)
+                    environmentName(environment(y)) == package)))
+            }, NA)
             X0 <- strsplit(substring(externalMethods, 7L), split = ":")
             X <- ulapply(X0, "[[", 1L)[idx]
-            packageGlobalsFunctions <- suniquec(packageGlobalsFunctions, X)
+            pkgGlobFunctions <- suniquec(pkgGlobFunctions, X)
 
-            idx <- packageObjs[["Type"]] == "S4MethodsTable"
-            S4Methods <- packageObjs[["Name"]][idx]
-            packageGlobals <- lapply(S4Methods, function(x) {
-                mEnv <- get(x, packageEnv)
-                methods <- ls(mEnv, all = TRUE)
-                inPackage <- ulapply(methods, function(y) {
-                    environmentName(environment(get(y, mEnv))) == package
-                })
+            idx <- pkgObjs[["Type"]] == "S4MethodsTable"
+            S4Methods <- pkgObjs[["Name"]][idx]
+            pkgGlobals <- lapply(S4Methods, function(x) {
+                mEnv <- get(x, pkgEnv)
+                methods <- ls(mEnv, all.names = TRUE)
+                inPackage <- vapply(methods, function(y)
+                    environmentName(environment(get(y, mEnv))) == package, NA)
                 methods <- methods[inPackage]
-                z <- lapply(methods, function(y) {
-                    findGlobalsBioC(get(y, mEnv), merge = FALSE)
-                })
+                z <- lapply(methods, function(y)
+                    findGlobalsBioC(get(y, mEnv), merge = FALSE))
                 list("classes" = unlist(strsplit(methods, "#")),
                      "functions" = ulapply(z, "[[", "functions"),
                      "variables" = ulapply(z, "[[", "variables"))
             })
-            packageClasses <-
-                suniquec(packageClasses, packageGlobals, "classes")
-            packageGlobalsFunctions <-
-                suniquec(packageGlobalsFunctions, packageGlobals, "functions")
-            packageGlobalsVariables <-
-                suniquec(packageGlobalsVariables, packageGlobals, "variables")
+            pkgClasses <-
+                suniquec(pkgClasses, pkgGlobals, "classes")
+            pkgGlobFunctions <-
+                suniquec(pkgGlobFunctions, pkgGlobals, "functions")
+            pkgGlobVariables <-
+                suniquec(pkgGlobVariables, pkgGlobals, "variables")
         }
-        if (any(packageObjs[["Type"]] == "Other")) {
-            idx <- packageObjs[["Type"]] == "Other" &
-            packageObjs[["Function"]]
-            Other <- packageObjs[["Name"]][idx]
-            packageGlobals <- lapply(Other, function(x) tryCatch({
-                findGlobalsBioC(get(x, packageEnv), merge = FALSE)
+        if (any(pkgObjs[["Type"]] == "Other")) {
+            idx <- pkgObjs[["Type"]] == "Other" &
+            pkgObjs[["Function"]]
+            Other <- pkgObjs[["Name"]][idx]
+            pkgGlobals <- lapply(Other, function(x) tryCatch({
+                findGlobalsBioC(get(x, pkgEnv), merge = FALSE)
             }, error = function(e) {
                 list("functions" = character(0L),
                      "variables" = character(0L))
             }))
-            packageGlobalsFunctions <-
-                suniquec(packageGlobalsFunctions, packageGlobals, "functions")
-            packageGlobalsVariables <-
-                suniquec(packageGlobalsVariables, packageGlobals, "variables")
+            pkgGlobFunctions <-
+                suniquec(pkgGlobFunctions, pkgGlobals, "functions")
+            pkgGlobVariables <-
+                suniquec(pkgGlobVariables, pkgGlobals, "variables")
         }
     }
 
     ## Remove objects that can't be found; may have been local
-    idx <- ulapply(packageGlobalsFunctions, exists, packageEnv)
-    packageGlobalsFunctions <- packageGlobalsFunctions[idx]
-    idx <- ulapply(packageGlobalsVariables, exists, packageEnv)
-    packageGlobalsVariables <- packageGlobalsVariables[idx]
+    idx <- vapply(pkgGlobFunctions, exists, NA, pkgEnv)
+    pkgGlobFunctions <- pkgGlobFunctions[idx]
+    idx <- vapply(pkgGlobVariables, exists, NA, pkgEnv)
+    pkgGlobVariables <- pkgGlobVariables[idx]
 
     ## Reclassify functions that appear as variables (e.g. sapply(data, mean))
-    if (length(packageGlobalsVariables) > 0L) {
-        isFunction <- ulapply(packageGlobalsVariables, function(x) tryCatch({
-            is.function(get(x, packageEnv))
-        }, error = function(e) {
-            FALSE
-        }))
-        packageGlobalsFunctions <-
-            suniquec(packageGlobalsFunctions,
-                     packageGlobalsVariables[isFunction])
-        packageGlobalsVariables <- packageGlobalsVariables[!isFunction]
+    if (length(pkgGlobVariables) > 0L) {
+        isFunction <- vapply(pkgGlobVariables, function(x)
+            tryCatch(is.function(get(x, pkgEnv)), error=function(e) FALSE),
+                             NA)
+        pkgGlobFunctions <-
+            suniquec(pkgGlobFunctions,
+                     pkgGlobVariables[isFunction])
+        pkgGlobVariables <- pkgGlobVariables[!isFunction]
     }
 
     ## Find which global objects are external
-    if (package %in% loadedNamespaces()) {
-        packageImports <- getNamespaceImports(packageEnv)
-        X <- setNames(seq_len(length(packageImports)),
-                      names(packageImports))
-        packageImports <- lapply(X, function(i) {
-            if (identical(packageImports[[i]], TRUE)) {
-                importedEnv <- getNamespace(names(packageImports)[i])
-                imports <- ls(importedEnv, all = TRUE)
-                importedEnvImports <- getNamespaceImports(importedEnv)
-                idx <- !(names(importedEnvImports) %in% names(packageImports))
-                imports <- suniquec(imports, unlist(importedEnvImports[idx]))
-                setNames(imports, imports)
-            } else {
-                packageImports[[i]]
-            }
-        })
-    } else {
-        packageImports <- NULL
-    }
-    packageOriginGlobalsFunctions <-
-        ulapply(packageGlobalsFunctions, function(x) {
-            functionList <- findFunction(x, where = packageEnv)
+    pkgImports <-
+        if (package %in% loadedNamespaces()) {
+            pkgImp <- getNamespaceImports(pkgEnv)
+            X <- setNames(seq_along(pkgImp), names(pkgImp))
+            lapply(X, function(i) {
+                if (identical(pkgImp[[i]], TRUE)) {
+                    importedEnv <- getNamespace(names(pkgImp)[i])
+                    imports <- ls(importedEnv, all.names = TRUE)
+                    importedEnvImports <- getNamespaceImports(importedEnv)
+                    idx <- !(names(importedEnvImports) %in% names(pkgImp))
+                    imports <- suniquec(imports, unlist(importedEnvImports[idx]))
+                    setNames(imports, imports)
+                } else {
+                    pkgImp[[i]]
+                }
+            })
+        } ## else NULL
+    pkgOriGlobFunctions <-
+        ulapply(pkgGlobFunctions, function(x) {
+            functionList <- findFunction(x, where = pkgEnv)
             if (length(functionList) == 0L) {
                 functionList <- findFunction(x, where = globalenv())
             }
             candidates <-
                 sub("package:", "", ulapply(functionList, environmentName))
             if (paste0("imports:", package) %in% candidates) {
-                idx <- ulapply(packageImports, function(y) x %in% y)
-                candidates <- names(packageImports)[idx]
+                idx <- ulapply(pkgImports, function(y) x %in% y)
+                candidates <- names(pkgImports)[idx]
             }
             candidatesDefined <- ulapply(candidates, function(y) {
               exists(x, getPackageEnvironment(y), inherits=FALSE) |
@@ -169,31 +158,30 @@ findExternalDeps <- function(package) {
                    "define the generic")
             }
             candidates <- candidates[candidatesDefined]
-            isS4Method <- ulapply(candidates, function(y) {
-                isS4(get(x, getPackageEnvironment(y)))
-            })
+            isS4Method <- vapply(candidates, function(y)
+                isS4(get(x, getPackageEnvironment(y))), NA)
             if (any(isS4Method) && !all(isS4Method)) {
                 candidates <- candidates[isS4Method]
             }
             candidates[1L]
         })
 
-    packageClasses <-
-        packageClasses[ulapply(packageClasses, isClass)]
-    packageExternalClasses <-
-        packageClasses[!(packageClasses %in% getClasses(packageEnv))]
+    pkgClasses <-
+        pkgClasses[vapply(pkgClasses, isClass, NA)]
+    pkgExternalClasses <-
+        pkgClasses[!(pkgClasses %in% getClasses(pkgEnv))]
 
-    externalOrigin <- is.na(packageOriginGlobalsFunctions) |
-        (packageOriginGlobalsFunctions != package)
-    packageExternalGlobalsFunctions <-
-        packageGlobalsFunctions[externalOrigin]
-    packageOriginGlobalsFunctions <-
-        packageOriginGlobalsFunctions[externalOrigin]
+    externalOrigin <- is.na(pkgOriGlobFunctions) |
+        (pkgOriGlobFunctions != package)
+    pkgExtGlobFunctions <-
+        pkgGlobFunctions[externalOrigin]
+    pkgOriGlobFunctions <-
+        pkgOriGlobFunctions[externalOrigin]
 
     externalGlobalsVariables <-
-        !(packageGlobalsVariables %in% ls(packageEnv, all = TRUE))
-    packageExternalGlobalsVariables <-
-        packageGlobalsVariables[externalGlobalsVariables]
+        !(pkgGlobVariables %in% ls(pkgEnv, all.names = TRUE))
+    pkgExtGlobVariables <-
+        pkgGlobVariables[externalGlobalsVariables]
 
     ## Prepare the output
     S4ClassesOutput <- list()
@@ -201,37 +189,36 @@ findExternalDeps <- function(package) {
     functionsOutput <- list()
     variablesOutput <- list()
 
-    if (length(packageExternalClasses) > 0L) {
-        package <- ulapply(packageExternalClasses, function(x) {
-            slot(getClassDef(x, where = packageEnv), "package")
+    if (length(pkgExternalClasses) > 0L) {
+        package <- ulapply(pkgExternalClasses, function(x) {
+            slot(getClassDef(x, where = pkgEnv), "package")
         })
-        S4ClassesOutput <- split(packageExternalClasses, package)
+        S4ClassesOutput <- split(pkgExternalClasses, package)
     }
 
-    if (length(packageExternalGlobalsFunctions) > 0L) {
+    if (length(pkgExtGlobFunctions) > 0L) {
         isS4Method <-
-            ulapply(seq_along(packageExternalGlobalsFunctions), function(i) {
-                env <- getPackageEnvironment(packageOriginGlobalsFunctions[i])
-                isS4(getFunction(packageExternalGlobalsFunctions[i],
-                                 where = env))
-            })
+            vapply(seq_along(pkgExtGlobFunctions), function(i) {
+                env <- getPackageEnvironment(pkgOriGlobFunctions[i])
+                isS4(getFunction(pkgExtGlobFunctions[i], where = env))
+            }, NA)
         if (any(isS4Method)) {
             S4MethodsOutput <-
-                split(packageExternalGlobalsFunctions[isS4Method],
-                      packageOriginGlobalsFunctions[isS4Method])
+                split(pkgExtGlobFunctions[isS4Method],
+                      pkgOriGlobFunctions[isS4Method])
         }
         if (!all(isS4Method)) {
             functionsOutput <-
-                split(packageExternalGlobalsFunctions[!isS4Method],
-                      packageOriginGlobalsFunctions[!isS4Method])
+                split(pkgExtGlobFunctions[!isS4Method],
+                      pkgOriGlobFunctions[!isS4Method])
         }
     }
 
-    if (length(packageExternalGlobalsVariables) > 0L) {
-        variablesOrigin <- lapply(packageExternalGlobalsVariables, find)
+    if (length(pkgExtGlobVariables) > 0L) {
+        variablesOrigin <- lapply(pkgExtGlobVariables, find)
         package <- sub("package:", "", unlist(variablesOrigin))
         variablesOutput <-
-            split(packageExternalGlobalsVariables, package)
+            split(pkgExtGlobVariables, package)
     }
 
     list(S4Classes = S4ClassesOutput, S4Methods = S4MethodsOutput,
