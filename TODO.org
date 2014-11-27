@@ -1,0 +1,4 @@
+* writeNamespaceImports() *fails* to see  importClassesFrom(.)
+  e.g. for CRAN package 'classGraph'.
+** Reason:  findExternalDeps("classGraph") has empty '$ S4Classes' component
+   -> see  "FIXME" in R/findExternalDeps.R

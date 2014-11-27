@@ -31,6 +31,8 @@ findExternalDeps <- function(package) {
     pkgGlobFunctions <- character(0L)
     pkgGlobVariables <- character(0L)
     if (nrow(pkgObjs) > 0L) {
+        ## FIXME: we may use "foreign" classes without extending them, i.e. w/o
+        ##   having own S4Class objects -> search for is(), as() extends() ..?..
         if (any(pkgObjs[["Type"]] == "S4Class")) {
             idx <- pkgObjs[["Type"]] == "S4Class"
             S4Classes <- pkgObjs[["Name"]][idx]
