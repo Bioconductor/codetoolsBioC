@@ -22,3 +22,8 @@ stopifnot(all(is.element(c("base::cat"), unlist(globals))))
 globals <- findGlobalsBioC(function() base:::cat(), merge=FALSE)
 str(globals)
 stopifnot(all(is.element(c("base:::cat"), unlist(globals))))
+
+
+## Real-world example (also uses ::)
+globals <- findGlobalsBioC(stats::Gamma, merge=FALSE)
+str(globals)

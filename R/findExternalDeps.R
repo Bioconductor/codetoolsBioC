@@ -30,6 +30,8 @@ findExternalDeps <- function(package) {
     pkgClasses <- character(0L)
     pkgGlobFunctions <- character(0L)
     pkgGlobVariables <- character(0L)
+    pkgImpFunctions <- character(0L)
+    pkgImpVariables <- character(0L)
     if (nrow(pkgObjs) > 0L) {
         ## FIXME: we may use "foreign" classes without extending them, i.e. w/o
         ##   having own S4Class objects -> search for is(), as() extends() ..?..
@@ -45,6 +47,7 @@ findExternalDeps <- function(package) {
             })
             pkgClasses <- suniquec(pkgClasses, nearbyClasses)
         }
+
         S3MethodsTable <- get(".__S3MethodsTable__.", pkgEnv)
         if (length(S3Methods <- ls(S3MethodsTable, all.names=TRUE)) > 0L) {
             pkgGlobals <- lapply(S3Methods, function(x)
@@ -86,6 +89,7 @@ findExternalDeps <- function(package) {
             pkgGlobVariables <-
                 suniquec(pkgGlobVariables, pkgGlobals, "variables")
         }
+
         if (any(pkgObjs[["Type"]] == "Other")) {
             idx <- pkgObjs[["Type"]] == "Other" &
             pkgObjs[["Function"]]
@@ -100,20 +104,24 @@ findExternalDeps <- function(package) {
                 suniquec(pkgGlobFunctions, pkgGlobals, "functions")
             pkgGlobVariables <-
                 suniquec(pkgGlobVariables, pkgGlobals, "variables")
+            pkgImpFunctions <-
+                suniquec(pkgImpFunctions, pkgGlobals, "functions_import")
+            pkgImpVariables <-
+                suniquec(pkgImpVariables, pkgGlobals, "variables_import")
         }
     }
 
     ## Remove objects that can't be found; may have been local
-    idx <- vapply(pkgGlobFunctions, exists, NA, pkgEnv)
+    idx <- vapply(pkgGlobFunctions, FUN=exists, FUN.VALUE=NA, envir=pkgEnv)
     pkgGlobFunctions <- pkgGlobFunctions[idx]
-    idx <- vapply(pkgGlobVariables, exists, NA, pkgEnv)
+    idx <- vapply(pkgGlobVariables, FUN=exists, FUN.VALUE=NA, envir=pkgEnv)
     pkgGlobVariables <- pkgGlobVariables[idx]
 
     ## Reclassify functions that appear as variables (e.g. sapply(data, mean))
     if (length(pkgGlobVariables) > 0L) {
-        isFunction <- vapply(pkgGlobVariables, function(x)
+        isFunction <- vapply(pkgGlobVariables, FUN=function(x)
             tryCatch(is.function(get(x, pkgEnv)), error=function(e) FALSE),
-                             NA)
+                             FUN.VALUE=NA)
         pkgGlobFunctions <-
             suniquec(pkgGlobFunctions,
                      pkgGlobVariables[isFunction])
@@ -138,6 +146,7 @@ findExternalDeps <- function(package) {
                 }
             })
         } ## else NULL
+
     pkgOriGlobFunctions <-
         ulapply(pkgGlobFunctions, function(x) {
             functionList <- findFunction(x, where = pkgEnv)
@@ -214,6 +223,29 @@ findExternalDeps <- function(package) {
                 split(pkgExtGlobFunctions[!isS4Method],
                       pkgOriGlobFunctions[!isS4Method])
         }
+    }
+
+    ## Functions and objects imported via :: and :::
+    if (length(pkgImpFunctions) > 0L) {
+        str(pkgImpFunctions)
+      objs <- strsplit(pkgImpFunctions, split="(::|:::)")
+      for (parts in objs) {
+        pkg <- parts[1L]
+        obj <- parts[2L]
+        functionsOutput[[pkg]] <- c(functionsOutput[[pkg]], obj)
+      }
+      functionsOutput <- lapply(functionsOutput, FUN=function(x) sort(unique(x)))
+    }
+
+    if (length(pkgImpVariables) > 0L) {
+        str(pkgImpVariables)
+      objs <- strsplit(pkgImpVariables, split="(::|:::)")
+      for (parts in objs) {
+        pkg <- parts[1L]
+        obj <- parts[2L]
+        variablesOutput[[pkg]] <- c(variablesOutput[[pkg]], obj)
+      }
+      variablesOutput <- lapply(variablesOutput, FUN=function(x) sort(unique(x)))
     }
 
     if (length(pkgExtGlobVariables) > 0L) {
