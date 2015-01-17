@@ -6,6 +6,6 @@ Author: Patrick Aboyoun, Martin Maechler
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 Depends: R (>= 2.1)
 Imports: codetools, methods, utils
-Suggests: stats4
+Suggests: Matrix, stats4
 License: Artistic-2.0
 biocViews: Infrastructure
