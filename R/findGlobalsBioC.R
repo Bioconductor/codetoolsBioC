@@ -7,8 +7,15 @@ makeUsageCollectorBioC <- function(fun, ..., name = NULL,
         warn = codetools:::warning0,
         signal = codetools:::signalUsageIssue,
         leaf = codetools:::collectUsageLeaf) {
+
+    ## Imports
+    collectUsageCall <- codetools:::collectUsageCall
+    getCollectUsageHandler <- codetools:::getCollectUsageHandler
+    collectUsageIsLocal <- codetools:::collectUsageIsLocal
+
     if (typeof(fun) != "closure")
         stop("only works for closures")
+
     makeCodeWalker(..., name = name,
             enterLocal = enterLocal,
             enterGlobal = enterGlobal,
@@ -18,20 +25,28 @@ makeUsageCollectorBioC <- function(fun, ..., name = NULL,
             warn = warn,
             signal = signal,
             leaf = leaf,
-            call = codetools:::collectUsageCall,
-            handler = codetools:::getCollectUsageHandler,
+            call = collectUsageCall,
+            handler = getCollectUsageHandler,
             globalenv = environment(fun),
             env = environment(fun),
             name = NULL,
-            isLocal = codetools:::collectUsageIsLocal)
+            isLocal = collectUsageIsLocal)
 }
 
 collectUsageBioC <- function(fun, name = "<anonymous>", ...) {
+    ## Imports
+    collectUsageFun <- codetools:::collectUsageFun
+
     w <- makeUsageCollectorBioC(fun, ...)
-    codetools:::collectUsageFun(name, formals(fun), body(fun), w)
+    collectUsageFun(name, formals(fun), body(fun), w)
 }
 
 findGlobalsBioC <- function(fun, merge = TRUE) {
+    ## Imports
+    collectUsageFun <- codetools:::collectUsageFun
+    isDDSym <- codetools:::isDDSym
+    mkHash <- codetools:::mkHash
+
     enter <- function(type, v, e, w)
         assign(v, TRUE, if (type == "function") funs else vars)
     leaf <- function(v, w) {
@@ -39,7 +54,7 @@ findGlobalsBioC <- function(fun, merge = TRUE) {
             vn <- as.character(v)
             if (v == "...")
                 w$signal("... may be used in an incorrect context", w)
-            else if (codetools:::isDDSym(v)) {
+            else if (isDDSym(v)) {
                 if (w$isLocal("...", w))
                     w$enterLocal("variable", "...", v, w)
                 else
@@ -51,11 +66,11 @@ findGlobalsBioC <- function(fun, merge = TRUE) {
                 w$enterGlobal("variable", vn, v, w)
         } else if (typeof(v) == "closure" && w$followClosures) {
             w$env <- environment(v)
-            codetools:::collectUsageFun("<anonymous>", formals(v), body(v), w)
+            collectUsageFun("<anonymous>", formals(v), body(v), w)
         }
     }
-    vars <- codetools:::mkHash()
-    funs <- codetools:::mkHash()
+    vars <- mkHash()
+    funs <- mkHash()
 
     collectUsageBioC(fun, followClosures = TRUE, enterGlobal = enter,
                      leaf = leaf)
