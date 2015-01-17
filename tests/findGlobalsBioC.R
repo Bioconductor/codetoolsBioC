@@ -1,7 +1,6 @@
 library(codetoolsBioC)
 findGlobalsBioC <- codetoolsBioC:::findGlobalsBioC
 
-
 globals <- findGlobalsBioC(function() cat())
 print(globals)
 stopifnot(all(is.element(c("cat"), globals)))
@@ -15,8 +14,11 @@ print(globals)
 stopifnot(all(is.element(c("{", "cat", "print"), globals)))
 
 
-## Imports via ::
-globals <- findGlobalsBioC(function() base::cat())
-print(globals)
-## FIXME: findGlobalsBioC() fails to locate <pkg>::<object>
-## stopifnot(all(is.element(c("cat"), globals)))
+## Imports via :: and :::
+globals <- findGlobalsBioC(function() base::cat(), merge=FALSE)
+str(globals)
+stopifnot(all(is.element(c("base::cat"), unlist(globals))))
+
+globals <- findGlobalsBioC(function() base:::cat(), merge=FALSE)
+str(globals)
+stopifnot(all(is.element(c("base:::cat"), unlist(globals))))

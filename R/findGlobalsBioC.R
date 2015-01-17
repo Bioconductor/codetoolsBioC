@@ -47,8 +47,15 @@ findGlobalsBioC <- function(fun, merge = TRUE) {
     isDDSym <- codetools:::isDDSym
     mkHash <- codetools:::mkHash
 
-    enter <- function(type, v, e, w)
-        assign(v, TRUE, if (type == "function") funs else vars)
+    enter <- function(type, v, e, w) {
+        assign(v, value=TRUE, envir=if (type == "function") funs else vars)
+
+        ## Handle '::' and ':::'
+        if (is.element(v, c("::", ":::")) && typeof(e) == "language"){
+            v <- deparse(e)
+            assign(v, value=TRUE, envir=if (type == "function") funs_imports else vars_imports)
+        }
+    }
     leaf <- function(v, w) {
         if (typeof(v) == "symbol") {
             vn <- as.character(v)
@@ -69,14 +76,24 @@ findGlobalsBioC <- function(fun, merge = TRUE) {
             collectUsageFun("<anonymous>", formals(v), body(v), w)
         }
     }
+
     vars <- mkHash()
     funs <- mkHash()
+    vars_imports <- mkHash()
+    funs_imports <- mkHash()
 
     collectUsageBioC(fun, followClosures = TRUE, enterGlobal = enter,
                      leaf = leaf)
-    fnames <- ls(funs, all.names = TRUE)
-    vnames <- ls(vars, all.names = TRUE)
+
+    res <- list(
+      functions = ls(funs, all.names = TRUE),
+      variables = ls(vars, all.names = TRUE),
+      functions_import = ls(funs_imports, all.names = TRUE),
+      variables_import = ls(vars_imports, all.names = TRUE)
+    )
+
     if (merge)
-        suniquec(vnames, fnames)
-    else list(functions = fnames, variables = vnames)
+      res <- sort(unique(unlist(res, use.names=FALSE)))
+
+    res
 }
