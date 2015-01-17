@@ -1,5 +1,5 @@
 ### FIXME: This is *not* exported and nowhere used  -- ???
-getNamespaceFileImports <- function(package, lib.loc = base:::.libPaths()) {
+getNamespaceFileImports <- function(package, lib.loc = .libPaths()) {
     importCategories <-  c("importClasses", "importMethods", "imports")
     fileContents <-
       parseNamespaceFile(package = package, package.lib = lib.loc,
