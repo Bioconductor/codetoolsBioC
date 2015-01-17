@@ -21,9 +21,14 @@ getRdFileNames(topic, package=NULL)
 \examples{
 getRdFileNames("rbind")
 
-getRdFileNames("rbind", package=c("base", "IRanges"))
+isInstalled <- function(pkg)
+  inherits(suppressWarnings(packageDescription(pkg)), "packageDescription")
 
-getRdFileNames("ExpressionSet", "Biobase")
+if (isInstalled("IRanges"))
+  getRdFileNames("rbind", package=c("base", "IRanges"))
+
+if (isInstalled("Biobase"))
+  getRdFileNames("ExpressionSet", "Biobase")
 }
 
 \keyword{programming}
