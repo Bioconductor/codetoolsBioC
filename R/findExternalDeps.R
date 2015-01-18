@@ -227,7 +227,6 @@ findExternalDeps <- function(package) {
 
     ## Functions and objects imported via :: and :::
     if (length(pkgImpFunctions) > 0L) {
-        str(pkgImpFunctions)
       objs <- strsplit(pkgImpFunctions, split="(::|:::)")
       for (parts in objs) {
         pkg <- parts[1L]
@@ -238,7 +237,6 @@ findExternalDeps <- function(package) {
     }
 
     if (length(pkgImpVariables) > 0L) {
-        str(pkgImpVariables)
       objs <- strsplit(pkgImpVariables, split="(::|:::)")
       for (parts in objs) {
         pkg <- parts[1L]
