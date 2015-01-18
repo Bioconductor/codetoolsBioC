@@ -9,8 +9,9 @@ message("Package: Matrix")
 ed.Matr <- findExternalDeps("Matrix")
 str(ed.Matr)
 
-# Cleanup such that the test scripts can be called repeatedly
+## Cleanup such that the test scripts can be called repeatedly
 unloadNamespace("Matrix")
 unloadNamespace("lattice")
 unloadNamespace("grid")
+
 stopifnot(identical(loadedNamespaces(), ns0))

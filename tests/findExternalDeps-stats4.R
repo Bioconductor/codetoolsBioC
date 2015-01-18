@@ -13,6 +13,6 @@ stopifnot(
     c("character", "function", "integer", "language",
       "list", "matrix", "missing", "numeric") %in% ed.s4$S4Classes$methods)
 
-# Cleanup such that the test scripts can be called repeatedly
+## Cleanup such that the test scripts can be called repeatedly
 unloadNamespace("stats4")
 stopifnot(identical(loadedNamespaces(), ns0))

@@ -164,17 +164,20 @@ findExternalDeps <- function(package) {
                   isS4(get(x, getPackageEnvironment(y)))
             })
             if (!any(candidatesDefined)) {
-              stop("method(s) for '", x, "' imported from package(s) ",
+              warning("method(s) for '", x, "' imported from package(s) ",
                    paste(candidates, collapse=", "), ", but none of them ",
-                   "define the generic")
+                   "define the generic. This may be because the method(s) ",
+                   "is/are re-exported by those packages.")
+              "<unknown>"  ## NA_character_ is used for other purposes
+            } else {
+              candidates <- candidates[candidatesDefined]
+              isS4Method <- vapply(candidates, function(y)
+                  isS4(get(x, getPackageEnvironment(y))), NA)
+              if (any(isS4Method) && !all(isS4Method)) {
+                  candidates <- candidates[isS4Method]
+              }
+              candidates[1L]
             }
-            candidates <- candidates[candidatesDefined]
-            isS4Method <- vapply(candidates, function(y)
-                isS4(get(x, getPackageEnvironment(y))), NA)
-            if (any(isS4Method) && !all(isS4Method)) {
-                candidates <- candidates[isS4Method]
-            }
-            candidates[1L]
         })
 
     pkgClasses <-
@@ -182,8 +185,9 @@ findExternalDeps <- function(package) {
     pkgExternalClasses <-
         pkgClasses[!(pkgClasses %in% getClasses(pkgEnv))]
 
-    externalOrigin <- is.na(pkgOriGlobFunctions) |
-        (pkgOriGlobFunctions != package)
+    externalOrigin <- (is.na(pkgOriGlobFunctions) |
+        (pkgOriGlobFunctions != package)) &
+        (pkgOriGlobFunctions != "<unknown>")
     pkgExtGlobFunctions <-
         pkgGlobFunctions[externalOrigin]
     pkgOriGlobFunctions <-
