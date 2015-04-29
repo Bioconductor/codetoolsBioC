@@ -1,3 +1,12 @@
+* writeNamespaceImports() fails to import function when identically named symbol
+
+  e.g., for AnnotationDbi bfs <- bfs(...) where bfs is RBGL::bfs
+
+* writeNamespaceImports() identifies ::: qualifed imports as suitable for import
+
+  e.g., for AnnotationDbi BiocGenerics:::testPackage() suggestions
+  importFrom(BiocGenerics, testPacakge)
+
 * writeNamespaceImports() *fails* to see  importClassesFrom(.)
   e.g. for CRAN package 'classGraph'.
 ** Reason:  findExternalDeps("classGraph") has empty '$ S4Classes' component
