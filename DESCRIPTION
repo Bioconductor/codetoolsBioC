@@ -8,7 +8,9 @@ Authors@R: c(
   person("Henrik", "Bengtsson", role="ctb"),
   person("Bioconductor Package Maintainer", role="cre", email="maintainer@bioconductor.org"))
 Depends: R (>= 2.1)
-Imports: codetools, methods, utils
+Imports: codetools, methods, utils, stats
 Suggests: stats4, Matrix, aroma.core
 License: Artistic-2.0
+Encoding: UTF-8
 biocViews: Infrastructure
+RoxygenNote: 7.1.0
