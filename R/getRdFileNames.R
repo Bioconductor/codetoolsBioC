@@ -1,3 +1,28 @@
+#' Track Rd file names at which 'topic' is documented
+#' 
+#' Tracks the Rd file names at which a given 'topic' (alias) is documented.
+#' 
+#' 
+#' @param topic A length-one character vector specifying the topic (alias).
+#' @param package A character vector given the packages to search for Rd file
+#' names that document the \code{topic} , or 'NULL'. By default, all the
+#' packages in the search path are used.
+#' @author Chao-Jen Wong \email{cwon2@@fhcrc.org}
+#' @export
+#' @keywords programming
+#' @examples
+#' 
+#' getRdFileNames("rbind")
+#' 
+#' isInstalled <- function(pkg)
+#'   inherits(suppressWarnings(packageDescription(pkg)), "packageDescription")
+#' 
+#' if (isInstalled("IRanges"))
+#'   getRdFileNames("rbind", package=c("base", "IRanges"))
+#' 
+#' if (isInstalled("Biobase"))
+#'   getRdFileNames("ExpressionSet", "Biobase")
+#' 
 getRdFileNames <- function(topic, package=NULL)
 {
    ## Imports

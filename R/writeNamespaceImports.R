@@ -1,3 +1,38 @@
+#' Write NAMESPACE file imports statements
+#' 
+#' Writes imports statements that can be included in a package's NAMESPACE
+#' file.
+#' 
+#' The result is an approximation based upon the findings of
+#' \code{\link{findExternalDeps}}. S4 class dependencies are embedded into
+#' importClassesFrom statements, S4 methods dependencies are embedded into
+#' importMethodsFrom statements, and all other dependencies are embedded into
+#' importFrom statements.
+#' 
+#' See the document "Writing R Extensions" that is hosted on CRAN for more
+#' details on the proper construction of a NAMESPACE file.
+#' 
+#' @param package the quoted name of the package to analyze.
+#' @param file either a character string naming a file or an open writing
+#' connection. \code{""} indicates writing to the console.
+#' @param append logical. If \code{TRUE}, the output is appended to the file.
+#' If \code{FALSE}, any existing file with the specified name is destroyed and
+#' a new one is created. This argument is only used if \code{file} is a
+#' character string.
+#' @param quote logical. If \code{TRUE}, all import fields will be
+#' double-quoted.  If \code{FALSE}, only non-standard names like
+#' \code{[<-.fractions} will be double-quoted.
+#' @param width a positive integer giving the target column for wrapping lines
+#' in the output.
+#' @author Patrick Aboyoun
+#' @export
+#' @seealso \code{\link{findExternalDeps}}
+#' @keywords programming
+#' @examples
+#' 
+#' library(stats4)
+#' writeNamespaceImports("stats4")
+#' 
 writeNamespaceImports <-
     function(package, file = "", append = TRUE, quote = FALSE,
              width = 0.9 * getOption("width"))
