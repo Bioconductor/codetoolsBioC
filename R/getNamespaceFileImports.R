@@ -21,7 +21,7 @@ getNamespaceFileImports <- function(package, lib.loc = .libPaths()) {
     } else {
         fgen <- fileContents[["general"]]
         nms.fgen <- names(fgen)
-	X <- setNames(seq_along(fgen), nms.fgen)
+        X <- setNames(seq_along(fgen), nms.fgen)
         funsAndVars <- lapply(X, function(i) {
             x.i <- fgen[[i]]
             isFunction <- vapply(x.i, function(y)
