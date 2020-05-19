@@ -33,15 +33,13 @@
 #' library(stats4)
 #' writeNamespaceImports("stats4")
 #' 
-writeNamespaceImports <-
-    function(package, file = "", append = TRUE, quote = FALSE,
-             width = 0.9 * getOption("width"))
-{
+writeNamespaceImports <- function(package, file = "", append = TRUE, quote = FALSE,
+                                  width = 0.9 * getOption("width")) {
     writeImports <- function(x, prefix, file, width) {
         Rkeywords <-
-          c("NULL", "NA", "TRUE", "FALSE", "Inf", "NaN", "NA_integer_",
-            "NA_real_", "NA_character_", "NA_complex_", "function", "while",
-            "repeat", "for", "if", "in", "else", "next", "break", "...")
+            c("NULL", "NA", "TRUE", "FALSE", "Inf", "NaN", "NA_integer_",
+              "NA_real_", "NA_character_", "NA_complex_", "function", "while",
+              "repeat", "for", "if", "in", "else", "next", "break", "...")
         for (i in which(!(names(x) %in% ignoredPackages))) {
             if (quote) {
                 qstring1 <- "\""
@@ -72,7 +70,7 @@ writeNamespaceImports <-
     }
     if (!inherits(file, "connection"))
         stop("'file' must be a character string or connection")
-
+    
     allDeps <- findExternalDeps(package)
     allDepNames <- sort(unique(ulapply(allDeps, names)))
     allDepNames <- allDepNames[!(allDepNames %in% ignoredPackages)]
