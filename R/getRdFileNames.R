@@ -2,7 +2,6 @@
 #' 
 #' Tracks the Rd file names at which a given 'topic' (alias) is documented.
 #' 
-#' 
 #' @param topic A length-one character vector specifying the topic (alias).
 #' @param package A character vector given the packages to search for Rd file
 #' names that document the \code{topic} , or 'NULL'. By default, all the
@@ -51,5 +50,4 @@ getRdFileNames <- function(topic, package=NULL)
    paths <- unlist(paths)
 
    data.frame(packages=basename(names(paths)), Rd.file=basename(paths))
- }
-
+}
