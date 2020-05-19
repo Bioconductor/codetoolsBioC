@@ -25,7 +25,7 @@ loadRequiredPackages <- function(package)
 #' Finds external dependencies of a package.
 #' 
 #' The result is an approximation based upon the findings of \code{findGlobals}
-#' and an exploration the package namespace.
+#' and an exploration of the package namespace.
 #' 
 #' @param package the quoted name of the package to analyze.
 #' @return A list with four components: \code{S4Classes}, \code{S4Methods},
@@ -41,7 +41,6 @@ loadRequiredPackages <- function(package)
 #' 
 #' library(stats4)
 #' findExternalDeps("stats4")
-#' 
 findExternalDeps <- function(package) {
     loadRequiredPackages(package)
     pkgEnv <- getPackageEnvironment(package)
