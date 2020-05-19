@@ -20,13 +20,12 @@ Finds external dependencies of a package.
 }
 \details{
 The result is an approximation based upon the findings of \code{findGlobals}
-and an exploration the package namespace.
+and an exploration of the package namespace.
 }
 \examples{
 
 library(stats4)
 findExternalDeps("stats4")
-
 }
 \seealso{
 \code{\link[codetools]{findGlobals}},
