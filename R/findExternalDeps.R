@@ -18,6 +18,29 @@ loadRequiredPackages <- function(package)
     }
 }
 
+
+
+#' Find External Dependencies of a Package
+#' 
+#' Finds external dependencies of a package.
+#' 
+#' The result is an approximation based upon the findings of \code{findGlobals}
+#' and an exploration of the package namespace.
+#' 
+#' @param package the quoted name of the package to analyze.
+#' @return A list with four components: \code{S4Classes}, \code{S4Methods},
+#' \code{functions}, and \code{variables}. Each of these components in turn
+#' holds a named list of character vectors of object names from external
+#' packages.
+#' @author Patrick Aboyoun
+#' @export
+#' @seealso \code{\link[codetools]{findGlobals}},
+#' %\code{\link[codetools]{checkUsagePackage}}, Rd file not found.
+#' @keywords programming
+#' @examples
+#' 
+#' library(stats4)
+#' findExternalDeps("stats4")
 findExternalDeps <- function(package) {
     loadRequiredPackages(package)
     pkgEnv <- getPackageEnvironment(package)

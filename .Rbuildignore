@@ -1,1 +1,4 @@
 TODO.org
+^.*\.Rproj$
+^\.Rproj\.user$
+README.md

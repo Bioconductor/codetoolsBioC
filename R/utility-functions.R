@@ -11,11 +11,9 @@ getPackageEnvironment <- function(package) {
 ## common idioms
 ulapply <- function(...) unlist(lapply(...))
 
-suniquec <-
-    function(X, Y, what)
+suniquec <- function(X, Y, what) {
     ## optionally subset Y by elements named 'what', then make unique
     ## set with X
-{
     if (!missing(what))
         Y <- ulapply(Y, "[[", what)
     sort(unique(c(X, Y)))
